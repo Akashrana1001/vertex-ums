@@ -36,11 +36,18 @@ const socketHandlers = require('./sockets/socketHandlers');
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'https://vertex-ums-u3si.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean);
+
 const io = new Server(server, {
-  cors: { origin: process.env.CLIENT_URL, methods: ['GET', 'POST', 'PUT', 'DELETE'] }
+  cors: { origin: true, methods: ['GET', 'POST', 'PUT', 'DELETE'], credentials: true }
 });
 
-app.use(cors({ origin: process.env.CLIENT_URL }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);

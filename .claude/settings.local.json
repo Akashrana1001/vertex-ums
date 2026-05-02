@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"D:\\\\rishab-final\\\\backend\" -Recurse -Force | Where-Object { -not $_.PSIsContainer } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem \"D:\\\\rishab-final\\\\backend\\\\src\" -Recurse -Force | Where-Object { -not $_.PSIsContainer } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem \"D:\\\\rishab-final\\\\backend\" -Exclude \"node_modules\" -Recurse | Where-Object { -not $_.PSIsContainer } | Select-Object FullName)"
+    ]
+  }
+}

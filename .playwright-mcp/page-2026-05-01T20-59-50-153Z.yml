@@ -1,0 +1,135 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e9]: The Flashcard Engine
+        - generic [ref=e11]:
+          - button "Sign In" [ref=e12] [cursor=pointer]
+          - button "Start Studying" [ref=e13] [cursor=pointer]
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - img [ref=e23]
+        - generic [ref=e35]: Powered by cognitive science
+      - heading "Long-term retention beats short-term cramming." [level=1] [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]: Long-term
+          - generic [ref=e39]: retention
+          - generic [ref=e40]: beats
+        - generic [ref=e41]:
+          - generic [ref=e42]: short-term
+          - generic [ref=e43]: cramming.
+      - paragraph [ref=e44]: Upload any PDF-class notes, textbooks, or papers-and instantly generate a smart, practice-ready deck powered by spaced repetition.
+      - generic [ref=e45]:
+        - button "Upload your first PDF" [ref=e46] [cursor=pointer]:
+          - img [ref=e47]
+          - text: Upload your first PDF
+        - button "View a Sample Deck" [ref=e50] [cursor=pointer]:
+          - img [ref=e51]
+          - text: View a Sample Deck
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - heading "The Engine" [level=2] [ref=e55]
+        - paragraph [ref=e56]: Purpose-built tools designed to extract, structure, and cement knowledge into your long-term memory.
+      - generic [ref=e58]:
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - img [ref=e64]
+            - heading "High-Fidelity Ingestion" [level=3] [ref=e67]
+            - paragraph [ref=e68]: Comprehensive extraction, not bot-scraped garbage. Captures relationships, edge cases, and worked examples from complex academic texts.
+          - generic [ref=e74]:
+            - generic [ref=e75]: "{"
+            - generic [ref=e76]: "\"type\": \"concept_relation\","
+            - generic [ref=e77]: "\"front\": \"How does synaptic plasticity relate to LTP?\","
+            - generic [ref=e78]: "\"back\": \"LTP is a persistent strengthening...\""
+            - generic [ref=e79]: "}"
+        - generic [ref=e82]:
+          - img [ref=e84]
+          - heading "Spaced Repetition Engine" [level=3] [ref=e88]
+          - paragraph [ref=e89]: Smart fading. Cards you know intuitively fade away; cards you struggle with return precisely when you're about to forget them.
+          - generic [ref=e101]:
+            - generic [ref=e102]: Day 1
+            - generic [ref=e103]: Review Today
+        - generic [ref=e106]:
+          - img [ref=e108]
+          - heading "Mastery Analytics" [level=3] [ref=e110]
+          - paragraph [ref=e111]: Track what's solid, what's shaky, and what's due for review. Visualize your journey from cramming to genuine comprehension.
+          - generic [ref=e112]:
+            - generic [ref=e114]:
+              - generic [ref=e115]: Neuroscience 101
+              - generic [ref=e116]: 82%
+            - generic [ref=e120]:
+              - generic [ref=e121]: Cellular Biology
+              - generic [ref=e122]: 45%
+    - generic [ref=e128]:
+      - generic [ref=e129]:
+        - heading "Pipeline to Mastery" [level=2] [ref=e130]
+        - paragraph [ref=e131]: A seamless workflow from raw documents to deeply ingrained knowledge.
+      - generic [ref=e132]:
+        - generic [ref=e134]:
+          - generic [ref=e135]: "01"
+          - heading "Drop a PDF" [level=4] [ref=e136]
+          - paragraph [ref=e137]: Upload dense textbooks, lecture slides, or specialized papers.
+        - generic [ref=e138]:
+          - generic [ref=e139]: "02"
+          - heading "AI Structures Knowledge" [level=4] [ref=e140]
+          - paragraph [ref=e141]: The engine extracts core concepts and builds a structured deck.
+        - generic [ref=e142]:
+          - generic [ref=e143]: "03"
+          - heading "Practice & Recall" [level=4] [ref=e144]
+          - paragraph [ref=e145]: Review dynamically. The algorithm handles your scheduling.
+    - contentinfo [ref=e147]:
+      - generic [ref=e149]:
+        - generic [ref=e150]:
+          - generic [ref=e153]: Flashcard Engine
+          - paragraph [ref=e154]: Harnessing SM-2 spaced repetition and neural extraction to turn deep reading into permanent knowledge.
+          - generic [ref=e155]:
+            - link "X" [ref=e156] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e157]: X
+            - link "GitHub" [ref=e158] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e159]: GH
+            - link "LinkedIn" [ref=e160] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e161]: IN
+        - generic [ref=e162]:
+          - heading "Product" [level=4] [ref=e163]
+          - list [ref=e164]:
+            - listitem [ref=e165]:
+              - link "Dashboard" [ref=e166] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e167]:
+              - link "Study Mode" [ref=e168] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e169]:
+              - link "AI Ingestion" [ref=e170] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e171]:
+          - heading "Resources" [level=4] [ref=e172]
+          - list [ref=e173]:
+            - listitem [ref=e174]:
+              - link "Documentation" [ref=e175] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e176]:
+              - link "SM-2 Whitepaper" [ref=e177] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e178]:
+              - link "Community" [ref=e179] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e180]:
+          - heading "Stay Updated" [level=4] [ref=e181]
+          - generic [ref=e182]:
+            - textbox "Email address" [ref=e183]
+            - button "Join" [ref=e184] [cursor=pointer]
+          - paragraph [ref=e185]: Product updates, release notes, and memory-science insights.
+      - generic [ref=e186]:
+        - generic [ref=e187]: (c) 2026 Flashcard Engine. Built for Mastery.
+        - generic [ref=e188]:
+          - link "Privacy Policy" [ref=e189] [cursor=pointer]:
+            - /url: "#"
+          - link "Terms of Service" [ref=e190] [cursor=pointer]:
+            - /url: "#"
+        - generic [ref=e195]:
+          - img [ref=e196]
+          - text: Systems Operational
+  - region "Notifications alt+T"

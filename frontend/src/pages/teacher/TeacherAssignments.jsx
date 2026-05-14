@@ -12,6 +12,7 @@ import { Badge } from '../../components/ui/badge';
 import { SkeletonList } from '../../components/SkeletonLoader';
 import { TEACHER_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import Particles from '../../components/Particles';
@@ -21,6 +22,7 @@ const item = { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0, tran
 
 const TeacherAssignments = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [assignments, setAssignments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +37,18 @@ const TeacherAssignments = () => {
       setCourses(c.data);
     }).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onUpdate = (a) => setAssignments(p => p.map(x => x._id === a._id ? a : x));
+    const onDelete = ({ _id }) => setAssignments(p => p.filter(x => x._id !== _id));
+    socket.on('updateAssignment', onUpdate);
+    socket.on('deleteAssignment', onDelete);
+    return () => {
+      socket.off('updateAssignment', onUpdate);
+      socket.off('deleteAssignment', onDelete);
+    };
+  }, [socket]);
 
   const create = async () => {
     if (!form.title || !form.courseId) return toast.error('Title and course required');

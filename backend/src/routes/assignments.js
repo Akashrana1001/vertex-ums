@@ -28,10 +28,18 @@ router.post('/', async (req, res) => {
     if (req.user.role !== 'TEACHER') {
       return res.status(403).json({ message: 'Only teachers can create assignments' });
     }
-    const assignment = await Assignment.create({
+    const created = await Assignment.create({
       ...req.body,
       teacherId: req.user.id,
     });
+    const assignment = await Assignment.findById(created._id)
+      .populate('courseId', 'title')
+      .populate('teacherId', 'name email')
+      .populate('submissions.studentId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) io.emit('newAssignment', assignment);
+
     res.status(201).json(assignment);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -46,6 +54,10 @@ router.delete('/:id', async (req, res) => {
     }
     const assignment = await Assignment.findByIdAndDelete(req.params.id);
     if (!assignment) return res.status(404).json({ message: 'Assignment not found' });
+
+    const io = req.app.get('io');
+    if (io) io.emit('deleteAssignment', { _id: req.params.id });
+
     res.json({ message: 'Assignment deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -68,7 +80,15 @@ router.post('/:id/submit', async (req, res) => {
     );
     assignment.submissions.push({ studentId: req.user.id, fileUrl });
     await assignment.save();
-    res.json(assignment);
+    const populated = await Assignment.findById(assignment._id)
+      .populate('courseId', 'title')
+      .populate('teacherId', 'name email')
+      .populate('submissions.studentId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) io.emit('updateAssignment', populated);
+
+    res.json(populated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -92,7 +112,15 @@ router.put('/:id/grade', async (req, res) => {
     submission.grade = grade;
     submission.feedback = feedback;
     await assignment.save();
-    res.json(assignment);
+    const populated = await Assignment.findById(assignment._id)
+      .populate('courseId', 'title')
+      .populate('teacherId', 'name email')
+      .populate('submissions.studentId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) io.emit('updateAssignment', populated);
+
+    res.json(populated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

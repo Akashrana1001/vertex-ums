@@ -11,6 +11,7 @@ import { Badge } from '../../components/ui/badge';
 import { SkeletonList } from '../../components/SkeletonLoader';
 import { STUDENT_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import Particles from '../../components/Particles';
@@ -20,21 +21,31 @@ const item = { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0, tran
 
 const StudentAssignments = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [assignments, setAssignments] = useState([]);
-  const [enrolledCourseIds, setEnrolledCourseIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(null);
   const [submitUrl, setSubmitUrl] = useState('');
   const [submitTarget, setSubmitTarget] = useState(null);
 
   useEffect(() => {
-    Promise.all([api.get('/assignments'), api.get('/courses')]).then(([a, c]) => {
-      const enrolled = c.data.filter(course => course.enrolledStudents?.some(s => (s._id || s) === user?.id));
-      const ids = enrolled.map(c => c._id);
-      setEnrolledCourseIds(ids);
-      setAssignments(a.data.filter(asgn => ids.includes(asgn.courseId?._id || asgn.courseId)));
-    }).finally(() => setLoading(false));
+    api.get('/assignments').then(r => setAssignments(r.data)).finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onNew = (a) => setAssignments(p => p.some(x => x._id === a._id) ? p : [a, ...p]);
+    const onUpdate = (a) => setAssignments(p => p.map(x => x._id === a._id ? a : x));
+    const onDelete = ({ _id }) => setAssignments(p => p.filter(x => x._id !== _id));
+    socket.on('newAssignment', onNew);
+    socket.on('updateAssignment', onUpdate);
+    socket.on('deleteAssignment', onDelete);
+    return () => {
+      socket.off('newAssignment', onNew);
+      socket.off('updateAssignment', onUpdate);
+      socket.off('deleteAssignment', onDelete);
+    };
+  }, [socket]);
 
   const getMySubmission = (asgn) =>
     asgn.submissions?.find(s => (s.studentId?._id || s.studentId) === user?.id);

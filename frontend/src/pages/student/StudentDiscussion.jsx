@@ -13,6 +13,7 @@ import { Avatar } from '../../components/Avatar';
 import { SkeletonList } from '../../components/SkeletonLoader';
 import { STUDENT_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import Particles from '../../components/Particles';
@@ -22,6 +23,7 @@ const item = { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0, tran
 
 const StudentDiscussion = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [posts, setPosts] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,15 +36,25 @@ const StudentDiscussion = () => {
 
   useEffect(() => {
     Promise.all([api.get('/discussion'), api.get('/courses')]).then(([d, c]) => {
-      const enrolled = c.data.filter(course =>
-        course.enrolledStudents?.some(s => (s._id || s) === user?.id)
-      );
-      setCourses(enrolled);
-      const ids = new Set(enrolled.map(c => c._id));
-      // Show general posts + course posts for enrolled courses
-      setPosts(d.data.filter(p => !p.courseId || ids.has(p.courseId?._id || p.courseId)));
+      setCourses(c.data);
+      setPosts(d.data);
     }).finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onNew = (post) => setPosts(p => p.some(x => x._id === post._id) ? p : [post, ...p]);
+    const onUpdate = (post) => setPosts(p => p.map(x => x._id === post._id ? post : x));
+    const onDelete = ({ _id }) => setPosts(p => p.filter(x => x._id !== _id));
+    socket.on('newDiscussion', onNew);
+    socket.on('updateDiscussion', onUpdate);
+    socket.on('deleteDiscussion', onDelete);
+    return () => {
+      socket.off('newDiscussion', onNew);
+      socket.off('updateDiscussion', onUpdate);
+      socket.off('deleteDiscussion', onDelete);
+    };
+  }, [socket]);
 
   const create = async () => {
     if (!form.title || !form.content) return toast.error('Title and content required');

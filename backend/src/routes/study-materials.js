@@ -27,7 +27,14 @@ router.post('/', async (req, res) => {
     if (req.user.role !== 'TEACHER') {
       return res.status(403).json({ message: 'Only teachers can upload study materials' });
     }
-    const material = await StudyMaterial.create({ ...req.body, teacherId: req.user.id });
+    const created = await StudyMaterial.create({ ...req.body, teacherId: req.user.id });
+    const material = await StudyMaterial.findById(created._id)
+      .populate('courseId', 'title')
+      .populate('teacherId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) io.emit('newStudyMaterial', material);
+
     res.status(201).json(material);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -42,6 +49,10 @@ router.delete('/:id', async (req, res) => {
     }
     const material = await StudyMaterial.findByIdAndDelete(req.params.id);
     if (!material) return res.status(404).json({ message: 'Study material not found' });
+
+    const io = req.app.get('io');
+    if (io) io.emit('deleteStudyMaterial', { _id: req.params.id });
+
     res.json({ message: 'Study material deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });

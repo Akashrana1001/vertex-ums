@@ -24,7 +24,14 @@ router.get('/', async (req, res) => {
 // POST / â€” authenticated, create discussion post
 router.post('/', async (req, res) => {
   try {
-    const discussion = await Discussion.create({ ...req.body, authorId: req.user.id });
+    const created = await Discussion.create({ ...req.body, authorId: req.user.id });
+    const discussion = await Discussion.findById(created._id)
+      .populate('courseId', 'title')
+      .populate('authorId', 'name email role');
+
+    const io = req.app.get('io');
+    if (io) io.emit('newDiscussion', discussion);
+
     res.status(201).json(discussion);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -40,7 +47,13 @@ router.post('/:id/reply', async (req, res) => {
 
     discussion.replies.push({ authorId: req.user.id, content });
     await discussion.save();
+    await discussion.populate('courseId', 'title');
+    await discussion.populate('authorId', 'name email role');
     await discussion.populate('replies.authorId', 'name email role');
+
+    const io = req.app.get('io');
+    if (io) io.emit('updateDiscussion', discussion);
+
     res.json(discussion);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -61,6 +74,10 @@ router.delete('/:id', async (req, res) => {
     }
 
     await discussion.deleteOne();
+
+    const io = req.app.get('io');
+    if (io) io.emit('deleteDiscussion', { _id: req.params.id });
+
     res.json({ message: 'Discussion deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -77,6 +77,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/study-materials', studyMaterialRoutes);
 app.use('/api/users', userRoutes);
 
+app.set('io', io);
 socketHandlers(io);
 
 mongoose

@@ -6,18 +6,32 @@ import { CourseList } from '../../features/courses/CourseList';
 import { AttendanceModal } from '../../features/attendance/AttendanceModal';
 import { STUDENT_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import Particles from '../../components/Particles';
 
 const StudentCourses = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get('/courses').then(r => setCourses(r.data)).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onNew = (course) => setCourses(p => p.some(c => c._id === course._id) ? p : [course, ...p]);
+    const onUpdate = (course) => setCourses(p => p.map(c => c._id === course._id ? course : c));
+    socket.on('newCourse', onNew);
+    socket.on('updateCourse', onUpdate);
+    return () => {
+      socket.off('newCourse', onNew);
+      socket.off('updateCourse', onUpdate);
+    };
+  }, [socket]);
 
   const enrolledIds = courses
     .filter(c => c.enrolledStudents?.some(s => (s._id || s) === user?.id))

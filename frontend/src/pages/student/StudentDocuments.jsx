@@ -9,6 +9,7 @@ import { SkeletonList } from '../../components/SkeletonLoader';
 import { AttendanceModal } from '../../features/attendance/AttendanceModal';
 import { STUDENT_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import Particles from '../../components/Particles';
 
@@ -18,6 +19,7 @@ const item = { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0, tran
 
 const StudentDocuments = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [materials, setMaterials] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,12 +27,22 @@ const StudentDocuments = () => {
 
   useEffect(() => {
     Promise.all([api.get('/study-materials'), api.get('/courses')]).then(([m, c]) => {
-      const enrolled = c.data.filter(course => course.enrolledStudents?.some(s => (s._id || s) === user?.id));
-      setCourses(enrolled);
-      const ids = new Set(enrolled.map(c => c._id));
-      setMaterials(m.data.filter(mat => ids.has(mat.courseId?._id || mat.courseId)));
+      setCourses(c.data);
+      setMaterials(m.data);
     }).finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onNew = (mat) => setMaterials(p => p.some(m => m._id === mat._id) ? p : [mat, ...p]);
+    const onDelete = ({ _id }) => setMaterials(p => p.filter(m => m._id !== _id));
+    socket.on('newStudyMaterial', onNew);
+    socket.on('deleteStudyMaterial', onDelete);
+    return () => {
+      socket.off('newStudyMaterial', onNew);
+      socket.off('deleteStudyMaterial', onDelete);
+    };
+  }, [socket]);
 
   const filtered = filterCourse ? materials.filter(m => (m.courseId?._id || m.courseId) === filterCourse) : materials;
 

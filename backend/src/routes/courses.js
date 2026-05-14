@@ -25,6 +25,10 @@ router.post('/', async (req, res) => {
     const { title } = req.body;
     const course = await Course.create({ title, teacherId: req.user.id });
     const populated = await course.populate('teacherId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) io.emit('newCourse', populated);
+
     res.status(201).json(populated);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -53,6 +57,15 @@ router.post('/:id/enroll', async (req, res) => {
     }
     course.enrolledStudents.push(req.user.id);
     await course.save();
+
+    const io = req.app.get('io');
+    if (io) {
+      const populated = await Course.findById(course._id)
+        .populate('teacherId', 'name email')
+        .populate('enrolledStudents', 'name email');
+      io.emit('updateCourse', populated);
+    }
+
     res.json({ message: 'Enrolled successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });

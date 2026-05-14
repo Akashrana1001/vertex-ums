@@ -13,6 +13,7 @@ import { Avatar } from '../../components/Avatar';
 import { SkeletonList } from '../../components/SkeletonLoader';
 import { TEACHER_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import Particles from '../../components/Particles';
@@ -22,6 +23,7 @@ const item = { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0, tran
 
 const TeacherDiscussion = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [posts, setPosts] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,21 @@ const TeacherDiscussion = () => {
       setCourses(c.data);
     }).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onNew = (post) => setPosts(p => p.some(x => x._id === post._id) ? p : [post, ...p]);
+    const onUpdate = (post) => setPosts(p => p.map(x => x._id === post._id ? post : x));
+    const onDelete = ({ _id }) => setPosts(p => p.filter(x => x._id !== _id));
+    socket.on('newDiscussion', onNew);
+    socket.on('updateDiscussion', onUpdate);
+    socket.on('deleteDiscussion', onDelete);
+    return () => {
+      socket.off('newDiscussion', onNew);
+      socket.off('updateDiscussion', onUpdate);
+      socket.off('deleteDiscussion', onDelete);
+    };
+  }, [socket]);
 
   const create = async () => {
     if (!form.title || !form.content) return toast.error('Title and content required');

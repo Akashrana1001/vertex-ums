@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/badge';
 import { SkeletonList } from '../../components/SkeletonLoader';
 import { STUDENT_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import Particles from '../../components/Particles';
 
@@ -23,18 +24,28 @@ const item = { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0, tran
 
 const StudentExams = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.get('/exams'), api.get('/courses')]).then(([e, c]) => {
-      const enrolled = c.data.filter(course =>
-        course.enrolledStudents?.some(s => (s._id || s) === user?.id)
-      );
-      const ids = new Set(enrolled.map(c => c._id));
-      setExams(e.data.filter(ex => ids.has(ex.courseId?._id || ex.courseId)));
-    }).finally(() => setLoading(false));
+    api.get('/exams').then(r => setExams(r.data)).finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onNew = (e) => setExams(p => p.some(x => x._id === e._id) ? p : [e, ...p]);
+    const onUpdate = (e) => setExams(p => p.map(x => x._id === e._id ? e : x));
+    const onDelete = ({ _id }) => setExams(p => p.filter(x => x._id !== _id));
+    socket.on('newExam', onNew);
+    socket.on('updateExam', onUpdate);
+    socket.on('deleteExam', onDelete);
+    return () => {
+      socket.off('newExam', onNew);
+      socket.off('updateExam', onUpdate);
+      socket.off('deleteExam', onDelete);
+    };
+  }, [socket]);
 
   const upcoming = exams.filter(e => new Date(e.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date));
   const past = exams.filter(e => new Date(e.date) < new Date()).sort((a, b) => new Date(b.date) - new Date(a.date));

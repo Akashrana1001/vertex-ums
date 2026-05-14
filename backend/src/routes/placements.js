@@ -17,6 +17,10 @@ router.get('/', protect, async (req, res) => {
 router.post('/', protect, teacherOnly, async (req, res) => {
     try {
         const newPlacement = await Placement.create(req.body);
+
+        const io = req.app.get('io');
+        if (io) io.emit('newPlacement', newPlacement);
+
         res.status(201).json(newPlacement);
     } catch (err) {
         res.status(500).json({ message: 'Server error' });

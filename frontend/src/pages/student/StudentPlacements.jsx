@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../../api/axios';
+import api from '../../api/axios';
+import useSocket from '../../hooks/useSocket';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Calendar, Building2, Briefcase, IndianRupee, Clock } from 'lucide-react';
@@ -9,22 +10,23 @@ import { STUDENT_NAV } from '../../config/navConfig';
 import Particles from '../../components/Particles';
 
 export default function StudentPlacements() {
+    const { socket } = useSocket();
     const [placements, setPlacements] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchPlacements = async () => {
-            try {
-                const res = await axios.get('/api/placements');
-                setPlacements(res.data);
-            } catch (err) {
-                console.error('Failed to fetch placements');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchPlacements();
+        api.get('/placements')
+            .then(res => setPlacements(res.data))
+            .catch(() => console.error('Failed to fetch placements'))
+            .finally(() => setLoading(false));
     }, []);
+
+    useEffect(() => {
+        if (!socket) return;
+        const onNew = (p) => setPlacements(prev => prev.some(x => x._id === p._id) ? prev : [p, ...prev]);
+        socket.on('newPlacement', onNew);
+        return () => socket.off('newPlacement', onNew);
+    }, [socket]);
 
     const getStatusColor = (status) => {
         switch (status) {

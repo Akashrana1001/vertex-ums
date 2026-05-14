@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from '../../api/axios';
+import api from '../../api/axios';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
@@ -20,7 +20,7 @@ export default function PlacementForm() {
         e.preventDefault();
         setLoading(true);
         try {
-            await axios.post('/api/placements', formData);
+            await api.post('/placements', formData);
             toast.success('Placement drive added!');
             setFormData({ companyName: '', roleOffered: '', package: '', visitDate: '', deadline: '', description: '' });
         } catch (error) {

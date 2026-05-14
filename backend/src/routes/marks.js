@@ -40,11 +40,20 @@ router.post('/', async (req, res) => {
     const filter = { studentId, courseId };
     if (examId) filter.examId = examId;
 
-    const mark = await Mark.findOneAndUpdate(
+    const upserted = await Mark.findOneAndUpdate(
       filter,
       { ...req.body, teacherId: req.user.id },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+    const mark = await Mark.findById(upserted._id)
+      .populate('studentId', 'name email')
+      .populate('courseId', 'title')
+      .populate('examId', 'title date type')
+      .populate('teacherId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) io.emit('updateMark', mark);
+
     res.status(201).json(mark);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -57,8 +66,17 @@ router.put('/:id', async (req, res) => {
     if (req.user.role !== 'TEACHER') {
       return res.status(403).json({ message: 'Only teachers can update marks' });
     }
-    const mark = await Mark.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!mark) return res.status(404).json({ message: 'Mark not found' });
+    const updated = await Mark.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Mark not found' });
+    const mark = await Mark.findById(updated._id)
+      .populate('studentId', 'name email')
+      .populate('courseId', 'title')
+      .populate('examId', 'title date type')
+      .populate('teacherId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) io.emit('updateMark', mark);
+
     res.json(mark);
   } catch (err) {
     res.status(500).json({ message: err.message });

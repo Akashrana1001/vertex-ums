@@ -11,6 +11,7 @@ import { Badge } from '../../components/ui/badge';
 import { SkeletonList } from '../../components/SkeletonLoader';
 import { TEACHER_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import Particles from '../../components/Particles';
@@ -29,6 +30,7 @@ const item = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0, tran
 
 const TeacherMarks = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [marks, setMarks] = useState([]);
   const [courses, setCourses] = useState([]);
   const [exams, setExams] = useState([]);
@@ -52,6 +54,16 @@ const TeacherMarks = () => {
       setStudents(s.data || []);
     }).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onUpdate = (m) => setMarks(p => {
+      const idx = p.findIndex(x => x._id === m._id);
+      return idx >= 0 ? p.map((x, i) => i === idx ? m : x) : [m, ...p];
+    });
+    socket.on('updateMark', onUpdate);
+    return () => socket.off('updateMark', onUpdate);
+  }, [socket]);
 
   const save = async () => {
     if (!form.studentId || !form.courseId || form.marks === '') return toast.error('Student, course and marks required');

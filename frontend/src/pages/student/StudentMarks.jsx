@@ -10,6 +10,7 @@ import { SkeletonList, SkeletonCard } from '../../components/SkeletonLoader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { STUDENT_NAV } from '../../config/navConfig';
 import useAuth from '../../hooks/useAuth';
+import useSocket from '../../hooks/useSocket';
 import api from '../../api/axios';
 import Particles from '../../components/Particles';
 
@@ -20,6 +21,7 @@ const item = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0, tran
 
 const StudentMarks = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [marks, setMarks] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +29,20 @@ const StudentMarks = () => {
     api.get('/marks').then(r => setMarks(r.data.filter(m => (m.studentId?._id || m.studentId) === user?.id)))
       .finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!socket || !user?.id) return;
+    const onUpdate = (m) => {
+      const owner = m.studentId?._id || m.studentId;
+      if (owner !== user.id) return;
+      setMarks(p => {
+        const idx = p.findIndex(x => x._id === m._id);
+        return idx >= 0 ? p.map((x, i) => i === idx ? m : x) : [m, ...p];
+      });
+    };
+    socket.on('updateMark', onUpdate);
+    return () => socket.off('updateMark', onUpdate);
+  }, [socket, user]);
 
   const avg = marks.length > 0
     ? Math.round(marks.reduce((s, m) => s + (m.marks / m.maxMarks) * 100, 0) / marks.length)
